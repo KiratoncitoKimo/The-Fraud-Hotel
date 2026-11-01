@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>The Fraud Hotel</title>
+    <style>
+        .section 
+		{ 
+			border:         1px solid #000000; 
+			border-radius:  4px; 
+			padding:       16px; 
+			
+			margin-bottom: 16px; 
+		}
+        .debug-box 
+		{ 
+		    border:         2px solid #00FF00; 
+			border-radius:  4px; 
+			padding:       12px;
+			
+			background: #000000; 
+			color:      #00FF00; 
+			
+			font-family: monospace; 
+			white-space: pre-wrap;
+			
+			max-height: 250px; 
+			overflow-y: auto; 
+		}
+    </style>
+</head>
+<body>
+    <h1>The Fraud Hotel</h1>
+    
+    <div class="section">
+        <h3>Test Endpoint (GET /api/test)</h3>
+        <input type="text" id="nameInput" placeholder="Parameter">
+        <button onclick="sendRequest()">Send</button>
+        <p><span id="output"></span></p>
+    </div>
+
+    <div class="section">
+        <h3>Database Endpoint (POST /api/reservation)</h3>
+        
+        <div style="margin-bottom: 12px;">
+            <button onclick="fetchAllReservations()">Load All Reservations</button>
+        </div>
+
+        <div style="margin-bottom: 12px;">
+			<button onclick="addReservation()">Create</button>
+            <input type="number" id="addRoomNumber" placeholder="Room Number" style="width: 160px;">
+            <input type="text" id="addGuestName" placeholder="Guest Name">
+        </div>
+
+        <div style="margin-bottom: 12px;">
+			<button onclick="deleteReservation()">Destroy</button>
+            <input type="number" id="delRoomNumber" placeholder="Room Number" style="width: 160px;">
+        </div>
+
+        <h4>Debug Output:</h4>
+        <div id="debugConsole" class="debug-box">...</div>
+    </div>
+
+    <script src="./script.js"></script>
+</body>
+</html>
