@@ -1,0 +1,67 @@
+
+.app-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.navbar {
+  background: #14263d;
+  color: white;
+  padding: 20px 6%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+}
+
+.brand {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.nav-links {
+  display: flex;
+  gap: 24px;
+}
+
+.nav-links a {
+  opacity: 0.7;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+  opacity: 1;
+  color: #f0c77b;
+}
+
+.main-content {
+  flex: 1;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 64px 6%;
+}
+
+.main-content h1 {
+  font-size: 36px;
+  margin-top: 0;
+}
+
+.footer {
+  background: #14263d;
+  color: white;
+  text-align: center;
+  padding: 18px;
+}
+
+@media (max-width: 600px) {
+  .navbar {
+    flex-direction: column;
+  }
+
+  .nav-links {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
