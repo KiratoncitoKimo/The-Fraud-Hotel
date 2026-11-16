@@ -27,6 +27,11 @@
 			max-height: 250px; 
 			overflow-y: auto; 
 		}
+		.logged-user-text 
+		{
+            font-weight: bold;
+            color:      #006600;
+        }
     </style>
 </head>
 <body>
@@ -59,6 +64,40 @@
 
         <h4>Debug Output:</h4>
         <div id="debugConsole" class="debug-box">...</div>
+    </div>
+
+    <div class = "section">
+        <h3>Database Endpoint (POST /api/user)</h3>
+
+        <div style = "margin-bottom: 12px;">
+            <button onclick="fetchAllAccounts()">Load All Accounts</button>
+        </div>
+
+        <div style = "margin-bottom: 12px;">
+            <button onclick="addAccount()">Create</button>
+            <input type = "number" id = "addId" placeholder = "Id" style = "width: 160px;">
+            <input type = "text" id = "addLogin" placeholder = "Account Login">
+            <input type = "text" id = "addPassword" placeholder = "Account Password"> 
+        </div>
+
+        <div style = "margin-bottom: 12px;">
+            <button onclick = "deleteAccount()">Destroy</button>
+            <input type = "number" id = "delId" placeholder = "Id" style = "width: 160px;">
+        </div>
+		
+		<div style="margin-bottom: 12px; font-size: 1.1em;">
+            Currently logged in: <span id="currentUser" class="logged-user-text">None</span>
+        </div>
+
+        <div style = "margin-bottom: 12px;">
+            <button onclick = "loginAccount()">Login</button>
+            <button onclick = "logoutAccount()">Logout</button>
+            <input type = "text" id = "loginName" placeholder = "Login">
+            <input type = "text" id = "loginPassword" placeholder = "Password">
+        </div>
+
+        <h4>Debug Output:</h4>
+        <div id = "debugConsoleUsers" class = "debug-box">...</div>
     </div>
 
     <script src="./script.js"></script>
