@@ -1,8 +1,14 @@
+import sqlite3
+
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from database import Database
 
-db = Database.connect("api/database.db")
+try:
+    db = Database.connect("api/database.db")
+
+except sqlite3.OperationalError:
+    db = Database.connect("database.db")
 
 app = Flask(__name__)
 CORS(app)

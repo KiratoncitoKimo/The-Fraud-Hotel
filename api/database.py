@@ -26,7 +26,7 @@ class Account:
         
 
 class Database:
-    def __init__(self, path: str = "api/database.db"):
+    def __init__(self, path: str = "database.db"):
         self.path = path
         self._init_db()
 
