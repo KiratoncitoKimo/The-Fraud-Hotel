@@ -27,6 +27,11 @@
 			max-height: 250px; 
 			overflow-y: auto; 
 		}
+		.logged-user-text 
+		{
+            font-weight: bold;
+            color:      #006600;
+        }
     </style>
 </head>
 <body>
@@ -78,6 +83,10 @@
         <div style = "margin-bottom: 12px;">
             <button onclick = "deleteAccount()">Destroy</button>
             <input type = "number" id = "delId" placeholder = "Id" style = "width: 160px;">
+        </div>
+		
+		<div style="margin-bottom: 12px; font-size: 1.1em;">
+            Currently logged in: <span id="currentUser" class="logged-user-text">None</span>
         </div>
 
         <div style = "margin-bottom: 12px;">
