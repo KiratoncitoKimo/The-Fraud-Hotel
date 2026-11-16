@@ -2,7 +2,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from database import Database
 
-db = Database.connect("database.db")
+db = Database.connect("api/database.db")
 
 app = Flask(__name__)
 CORS(app)

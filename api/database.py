@@ -26,7 +26,7 @@ class Account:
         
 
 class Database:
-    def __init__(self, path: str = "database.db"):
+    def __init__(self, path: str = "api/database.db"):
         self.path = path
         self._init_db()
 
@@ -96,6 +96,7 @@ class Database:
                 (id, acc_login, password_hash)
             )
             return Account(id,acc_login,acc_password)
+
     def delete_account(self, id: int) -> bool: 
         with self._get_connection() as conn:
             cursor = conn.execute(
@@ -103,11 +104,13 @@ class Database:
                 (id,)
             )
             return cursor.rowcount > 0
+
     def get_accounts(self) -> list[Account]:
         with self._get_connection() as conn:
             cursor = conn.execute("SELECT id, login FROM users")
             rows = cursor.fetchall()
             return [Account(id = row["id"], login = row["login"], password="") for row in rows]
+
     def authentification(self, acc_login: str, acc_password: str) -> Account | None:
         with self._get_connection() as conn:
             hashed_password = hashlib.md5(acc_password.encode()).hexdigest()
@@ -116,6 +119,8 @@ class Database:
                 (acc_login, hashed_password)
             )
             row = cursor.fetchone()
+
             if row:
                 return Account(id=row["id"], login = row["login"], password = row["password"])
+
             return None
