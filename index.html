@@ -5,30 +5,26 @@
     <title>The Fraud Hotel</title>
     <style>
         .section 
-		{ 
-			border:         1px solid #000000; 
-			border-radius:  4px; 
-			padding:       16px; 
-			
-			margin-bottom: 16px; 
-		}
+        { 
+            border:         1px solid #000000; 
+            border-radius:  4px; 
+            padding:       16px; 
+            margin-bottom: 16px; 
+        }
         .debug-box 
-		{ 
-		    border:         2px solid #00FF00; 
-			border-radius:  4px; 
-			padding:       12px;
-			
-			background: #000000; 
-			color:      #00FF00; 
-			
-			font-family: monospace; 
-			white-space: pre-wrap;
-			
-			max-height: 250px; 
-			overflow-y: auto; 
-		}
-		.logged-user-text 
-		{
+        { 
+            border:         2px solid #00FF00; 
+            border-radius:  4px; 
+            padding:       12px;
+            background:   #000000; 
+            color:        #00FF00; 
+            font-family: monospace; 
+            white-space: pre-wrap;
+            max-height:    250px; 
+            overflow-y:    auto; 
+        }
+        .logged-user-text 
+        {
             font-weight: bold;
             color:      #006600;
         }
@@ -51,53 +47,61 @@
             <button onclick="fetchAllReservations()">Load All Reservations</button>
         </div>
 
-        <div style="margin-bottom: 12px;">
-			<button onclick="addReservation()">Create</button>
-            <input type="number" id="addRoomNumber" placeholder="Room Number" style="width: 160px;">
-            <input type="text" id="addGuestName" placeholder="Guest Name">
+		<div style="margin-bottom: 12px;">
+            <div>
+                <button onclick="addReservation()">Create</button>
+                <input type="number" id="addRoomNumber" placeholder="Room Number" style="width: 120px;">
+                <input type="text" id="addGuestName" placeholder="Guest Name">
+            </div>
+            <div style="margin-top: 6px; margin-left: 60px;">
+                <input type="datetime-local" id="addCheckIn">
+                <input type="datetime-local" id="addCheckOut">
+            </div>
         </div>
 
         <div style="margin-bottom: 12px;">
-			<button onclick="deleteReservation()">Destroy</button>
-            <input type="number" id="delRoomNumber" placeholder="Room Number" style="width: 160px;">
+            <button onclick="deleteReservation()">Destroy by ID</button>
+            <input type="number" id="delReservationId" placeholder="Reservation ID" style="width: 140px;">
+            <button onclick="deleteReservationByRoom()" style="margin-left: 12px;">Destroy by Room</button>
+            <input type="number" id="delRoomNumber" placeholder="Room Number" style="width: 140px;">
         </div>
 
         <h4>Debug Output:</h4>
         <div id="debugConsole" class="debug-box">...</div>
     </div>
 
-    <div class = "section">
+    <div class="section">
         <h3>Database Endpoint (POST /api/user)</h3>
 
-        <div style = "margin-bottom: 12px;">
+        <div style="margin-bottom: 12px;">
             <button onclick="fetchAllAccounts()">Load All Accounts</button>
         </div>
 
-        <div style = "margin-bottom: 12px;">
+        <div style="margin-bottom: 12px;">
             <button onclick="addAccount()">Create</button>
-            <input type = "number" id = "addId" placeholder = "Id" style = "width: 160px;">
-            <input type = "text" id = "addLogin" placeholder = "Account Login">
-            <input type = "text" id = "addPassword" placeholder = "Account Password"> 
+            <input type="number" id="addId" placeholder="Id" style="width: 160px;">
+            <input type="text" id="addLogin" placeholder="Account Login">
+            <input type="text" id="addPassword" placeholder="Account Password"> 
         </div>
 
-        <div style = "margin-bottom: 12px;">
-            <button onclick = "deleteAccount()">Destroy</button>
-            <input type = "number" id = "delId" placeholder = "Id" style = "width: 160px;">
+        <div style="margin-bottom: 12px;">
+            <button onclick="deleteAccount()">Destroy</button>
+            <input type="number" id="delId" placeholder="Id" style="width: 160px;">
         </div>
-		
-		<div style="margin-bottom: 12px; font-size: 1.1em;">
+        
+        <div style="margin-bottom: 12px; font-size: 1.1em;">
             Currently logged in: <span id="currentUser" class="logged-user-text">None</span>
         </div>
 
-        <div style = "margin-bottom: 12px;">
-            <button onclick = "loginAccount()">Login</button>
-            <button onclick = "logoutAccount()">Logout</button>
-            <input type = "text" id = "loginName" placeholder = "Login">
-            <input type = "text" id = "loginPassword" placeholder = "Password">
+        <div style="margin-bottom: 12px;">
+            <button onclick="loginAccount()">Login</button>
+            <button onclick="logoutAccount()">Logout</button>
+            <input type="text" id="loginName" placeholder="Login">
+            <input type="text" id="loginPassword" placeholder="Password">
         </div>
 
         <h4>Debug Output:</h4>
-        <div id = "debugConsoleUsers" class = "debug-box">...</div>
+        <div id="debugConsoleUsers" class="debug-box">...</div>
     </div>
 
     <script src="./script.js"></script>
