@@ -78,6 +78,9 @@
             <input type = "number" id = "addId" placeholder = "Id" style = "width: 160px;">
             <input type = "text" id = "addLogin" placeholder = "Account Login">
             <input type = "text" id = "addPassword" placeholder = "Account Password"> 
+            <label style = "margin-left: 8px;">
+                <input type = "checkbox" id = "addIsAdmin"> Admin
+            </label>
         </div>
 
         <div style = "margin-bottom: 12px;">
@@ -87,6 +90,8 @@
 		
 		<div style="margin-bottom: 12px; font-size: 1.1em;">
             Currently logged in: <span id="currentUser" class="logged-user-text">None</span>
+            | Admin: <span id = "currentAdmin" class = "logged-user-text">No</span>
+            | Token: <span id = "currentToken" style = "font-family: monospace;">None</span>
         </div>
 
         <div style = "margin-bottom: 12px;">

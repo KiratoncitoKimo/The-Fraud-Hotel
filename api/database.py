@@ -13,17 +13,17 @@ class RoomReservation:
         return f"RoomReservation(number={self.room_number}, guest='{self.guest_name}')"
 
 class Account:
-    def __init__(self, id: int, login: str, password: str):
+    def __init__(self, id: int, login: str, password: str, is_admin: bool = False):
         self.id = id
         self.login = login
         self.password = password
+        self.is_admin = bool(is_admin)
 
     def to_dict(self):
-        return {"id": self.id, "login": self.login}
+        return {"id": self.id, "login": self.login, "is_admin": self.is_admin}
 
     def __repr__(self):
-        return f"Account(id={self.id}, login='{self.login}', password='{self.password}')"
-        
+        return f"Account(id={self.id}, login='{self.login}', password='{self.password}', is_admin={self.is_admin})"
 
 class Database:
     def __init__(self, path: str = "database.db"):
@@ -47,7 +47,8 @@ class Database:
                 CREATE TABLE IF NOT EXISTS users (
                     id INTEGER PRIMARY KEY,
                     login TEXT NOT NULL,
-                    password TEXT NOT NULL
+                    password TEXT NOT NULL,
+                    is_admin INTEGER NOT NULL DEFAULT 0
                 )""")
 
     @classmethod
@@ -88,14 +89,15 @@ class Database:
             rows = cursor.fetchall()
             return [RoomReservation(row["room_number"], row["guest_name"]) for row in rows]
 
-    def add_account(self, id: int,acc_login: str, acc_password: str):
+    def add_account(self, id: int,acc_login: str, acc_password: str, is_admin: bool = False):
         with self._get_connection() as conn:
             password_hash = hashlib.md5(acc_password.encode()).hexdigest()
+            admin_flag = 1 if is_admin else 0
             conn.execute(
-                "INSERT OR REPLACE INTO users (id, login, password) VALUES (?, ?, ?)",
-                (id, acc_login, password_hash)
+                "INSERT OR REPLACE INTO users (id, login, password, is_admin) VALUES (?, ?, ?, ?)",
+                (id, acc_login, password_hash, admin_flag)
             )
-            return Account(id,acc_login,acc_password)
+            return Account(id,acc_login,acc_password, is_admin = bool(is_admin))
 
     def delete_account(self, id: int) -> bool: 
         with self._get_connection() as conn:
@@ -107,20 +109,20 @@ class Database:
 
     def get_accounts(self) -> list[Account]:
         with self._get_connection() as conn:
-            cursor = conn.execute("SELECT id, login FROM users")
+            cursor = conn.execute("SELECT id, login, is_admin FROM users")
             rows = cursor.fetchall()
-            return [Account(id = row["id"], login = row["login"], password="") for row in rows]
+            return [Account(id = row["id"], login = row["login"], password="", is_admin = bool(row["is_admin"])) for row in rows]
 
     def authentification(self, acc_login: str, acc_password: str) -> Account | None:
         with self._get_connection() as conn:
             hashed_password = hashlib.md5(acc_password.encode()).hexdigest()
             cursor = conn.execute(
-                "SELECT id, login, password FROM users WHERE login = ? AND password = ?",
+                "SELECT id, login, password, is_admin FROM users WHERE login = ? AND password = ?",
                 (acc_login, hashed_password)
             )
             row = cursor.fetchone()
 
             if row:
-                return Account(id=row["id"], login = row["login"], password = row["password"])
+                return Account(id=row["id"], login = row["login"], password = row["password"], is_admin = bool(row["is_admin"]))
 
             return None

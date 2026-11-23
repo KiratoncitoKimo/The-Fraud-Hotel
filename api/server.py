@@ -1,4 +1,5 @@
 import sqlite3
+import secrets
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS
@@ -13,6 +14,20 @@ except sqlite3.OperationalError:
 app = Flask(__name__)
 CORS(app)
 
+active_tokens: dict[str, dict] = {}
+
+def get_token_from_request() -> str | None:
+    auth_header = request.headers.get("Authorization", "")
+    if(auth_header.startswith("Bearer ")):
+        return auth_header.removeprefix("Bearer ").strip()
+    data = request.get_json(silent = True) or {}
+    return data.get("token")
+
+def get_session_from_request() -> dict | None:
+    token = get_token_from_request()
+    if not token:
+        return None
+    return active_tokens.get(token)
 
 @app.route("/api/test", methods=["GET"])
 def test_endpoint():
@@ -95,11 +110,19 @@ def add_account_endpoint():
     if not acc_password:
         return jsonify({"status": "failure", "message": "password cannot be empty"}), 400
 
-    db.add_account(id, acc_login, acc_password)
-    return jsonify({"status": "success", "message": f"Added acount for {acc_login}, id: {id}"}),  201
+    is_admin = bool(data.get("is_admin", False))
+
+    db.add_account(id, acc_login, acc_password, is_admin=is_admin)
+    return jsonify({"status": "success", "message": f"Added acount for {acc_login}, id: {id} (admin = {is_admin})"}),  201
 
 @app.route("/api/user-destroy", methods=["POST"])
 def delete_account_endpoint():
+    session = get_session_from_request()
+    if not session:
+        return jsonify({"status": "failure", "message": "Missing or invalid token"}), 401
+    if not session.get("is_admin"):
+        return jsonify({"status": "failure", "message": "Admin privileges required"}), 403
+    
     data = request.get_json()
     if not data or "id" not in data:
         return jsonify({"status": "failure", "message": "Missing id"}), 400
@@ -131,12 +154,19 @@ def authentification_endpoint():
     user = db.authentification(acc_login, acc_password)
 
     if user:
-        return jsonify({"status": "success", "message": f"User: {user.login} logged in", "data": user.to_dict()}), 200
+        token = secrets.token_hex(32)
+        active_tokens[token] = {"user_id": user.id, "login": user.login, "is_admin": user.is_admin}
+        payload = user.to_dict()
+        payload["token"] = token
+        return jsonify({"status": "success", "message": f"User: {user.login} logged in", "data": payload}), 200
     else:
         return jsonify({"status": "failure", "message": "Invalid login or password"}), 401
 
 @app.route("/api/user-logout", methods = ["POST"])
 def logout_endpoint():
+    token = get_token_from_request()
+    if token:
+        active_tokens.pop(token, None)
     return jsonify({"status": "success", "message": "User logged out"}), 200
 
 if __name__ == "__main__":

@@ -1,5 +1,8 @@
 const API_BASE_URL = 'http://localhost:5000';
 
+let authToken = null;
+let isAdmin = false;
+
 function logDebug(title, data) 
 {
     const consoleBox = document.getElementById('debugConsole');
@@ -138,6 +141,7 @@ async function addAccount(){
     const _id = document.getElementById('addId').value;
     const _login = document.getElementById('addLogin').value;
     const _password = document.getElementById('addPassword').value;
+    const _isAdmin = document.getElementById('addIsAdmin').checked;
 
     const url  = `${API_BASE_URL}/api/user-create`;
 
@@ -154,7 +158,8 @@ async function addAccount(){
                 body: JSON.stringify({
                     id: parseInt(_id,10),
                     acc_login: _login,
-                    acc_password: _password
+                    acc_password: _password,
+                    is_admin: _isAdmin
                 })
         });
         const data = await response.json();
@@ -175,11 +180,16 @@ async function deleteAccount(){
         return;
     }
 
+    const headers = {'Content-Type': 'application/json'};
+    if(authToken){
+        headers['Authorization'] = `Bearer ${authToken}`;
+    }
+
     try{
         const response = await fetch(
             url, {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                headers: headers,
                 body: JSON.stringify({
                     id: parseInt(_id, 10)
                 })
@@ -217,8 +227,12 @@ async function loginAccount(){
         const data = await response.json();
         logDebugUsers(`POST ${url} [${response.status}]`, data);
 
-        if (data.status === "success") {
-            document.getElementById('currentUser').innerText = _login;
+        if(data.status === "success" && data.data){
+            authToken = data.data.token;
+            isAdmin = Boolean(data.data.is_admin);
+            document.getElementById('currentUser').innerText = data.data.login;
+            document.getElementById('currentAdmin').innerText = isAdmin ? "Yes" : "No";
+            document.getElementById('currentToken').innerText = `${authToken.slice(0, 12)}...`;
         }
 
     }
@@ -230,19 +244,28 @@ async function loginAccount(){
 async function logoutAccount(){
     const url = `${API_BASE_URL}/api/user-logout`;
 
+    const headers = {'Content-Type': 'application/json'};
+    if(authToken){
+        headers['Authorization'] = `Bearer ${authToken}`;
+    }
+
     try{
         const response = await fetch(
             url, {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'}
+            headers: headers
         });
         const data = await response.json();
         logDebugUsers(`POST ${url} [${response.status}]`, data);
 
         if (data.status === "success") {
             document.getElementById('currentUser').innerText = "None";
+            document.getElementById('currentAdmin').innerText = "No";
+            document.getElementById('currentToken').innerText = "None";
             document.getElementById('loginName').value = "";
             document.getElementById('loginPassword').value = "";
+            authToken = null;
+            isAdmin = false;
         }
 
     }
