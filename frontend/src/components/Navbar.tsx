@@ -11,7 +11,6 @@ function Navbar() {
       <div className="nav-links">
         <NavLink to="/" end>Strona główna</NavLink>
         <NavLink to="/user">Panel użytkownika</NavLink>
-        <NavLink to="/admin">Panel administratora</NavLink>
       </div>
     </nav>
   )
