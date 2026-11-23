@@ -1,16 +1,37 @@
 import sqlite3
 import hashlib
 
+
 class RoomReservation:
-    def __init__(self, room_number: int, guest_name: str):
+    def __init__(
+        self,
+        room_number: int,
+        guest_name: str,
+        check_in: str,
+        check_out: str,
+        id: int | None = None,
+    ):
+        self.id = id
         self.room_number = room_number
         self.guest_name = guest_name
+        self.check_in = check_in
+        self.check_out = check_out
 
     def to_dict(self):
-        return {"room_number": self.room_number, "guest_name": self.guest_name}
+        return {
+            "id": self.id,
+            "room_number": self.room_number,
+            "guest_name": self.guest_name,
+            "check_in": self.check_in,
+            "check_out": self.check_out,
+        }
 
     def __repr__(self):
-        return f"RoomReservation(number={self.room_number}, guest='{self.guest_name}')"
+        return (
+            f"RoomReservation(id={self.id}, number={self.room_number}, "
+            f"guest='{self.guest_name}', check_in='{self.check_in}', check_out='{self.check_out}')"
+        )
+
 
 class Account:
     def __init__(self, id: int, login: str, password: str, is_admin: bool = False):
@@ -38,11 +59,39 @@ class Database:
 
     def _init_db(self):
         with self._get_connection() as conn:
-            conn.execute("""
-                CREATE TABLE IF NOT EXISTS reservations (
-                    room_number INTEGER PRIMARY KEY,
-                    guest_name TEXT NOT NULL
-                )""")
+            columns = [
+                row["name"]
+                for row in conn.execute("PRAGMA table_info(reservations)").fetchall()
+            ]
+
+            if columns and "id" not in columns:
+                conn.execute("ALTER TABLE reservations RENAME TO reservations_legacy")
+                conn.execute("""
+                    CREATE TABLE reservations (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        room_number INTEGER NOT NULL,
+                        guest_name TEXT NOT NULL,
+                        check_in TEXT NOT NULL,
+                        check_out TEXT NOT NULL
+                    )
+                """)
+                conn.execute("""
+                    INSERT INTO reservations (room_number, guest_name, check_in, check_out)
+                    SELECT room_number, guest_name, '', '' FROM reservations_legacy
+                """)
+                conn.execute("DROP TABLE reservations_legacy")
+
+            else:
+                conn.execute("""
+                    CREATE TABLE IF NOT EXISTS reservations (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        room_number INTEGER NOT NULL,
+                        guest_name TEXT NOT NULL,
+                        check_in TEXT NOT NULL,
+                        check_out TEXT NOT NULL
+                    )
+                """)
+
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS users (
                     id INTEGER PRIMARY KEY,
@@ -55,14 +104,38 @@ class Database:
     def connect(cls, path: str = "database.db"):
         return cls(path)
 
-    def add_reservation(self, room_number: int, guest_name: str):
+    def is_room_available(self, room_number: int, check_in: str, check_out: str) -> bool:
         with self._get_connection() as conn:
-            conn.execute(
-                "INSERT OR REPLACE INTO reservations (room_number, guest_name) VALUES (?, ?)",
-                (room_number, guest_name)
+            cursor = conn.execute(
+                """
+                SELECT 1 FROM reservations
+                WHERE room_number = ?
+                  AND check_in < ?
+                  AND check_out > ?
+                LIMIT 1
+                """,
+                (room_number, check_out, check_in),
             )
+            return cursor.fetchone() is None
 
-        return RoomReservation(room_number, guest_name)
+    def add_reservation(
+        self, room_number: int, guest_name: str, check_in: str, check_out: str
+    ) -> RoomReservation:
+        with self._get_connection() as conn:
+            cursor = conn.execute(
+                """
+                INSERT INTO reservations (room_number, guest_name, check_in, check_out)
+                VALUES (?, ?, ?, ?)
+                """,
+                (room_number, guest_name, check_in, check_out),
+            )
+            return RoomReservation(
+                room_number=room_number,
+                guest_name=guest_name,
+                check_in=check_in,
+                check_out=check_out,
+                id=cursor.lastrowid,
+            )
 
     def delete_reservation(self, room_number: int) -> bool:
         with self._get_connection() as conn:
@@ -89,27 +162,24 @@ class Database:
             rows = cursor.fetchall()
             return [RoomReservation(row["room_number"], row["guest_name"]) for row in rows]
 
-    def add_account(self, id: int,acc_login: str, acc_password: str, is_admin: bool = False):
+    def add_account(self, id: int, acc_login: str, acc_password: str, is_admin: bool = False):
         with self._get_connection() as conn:
             password_hash = hashlib.md5(acc_password.encode()).hexdigest()
             admin_flag = 1 if is_admin else 0
             conn.execute(
                 "INSERT OR REPLACE INTO users (id, login, password, is_admin) VALUES (?, ?, ?, ?)",
-                (id, acc_login, password_hash, admin_flag)
+                (id, acc_login, password_hash, admin_flag),
             )
-            return Account(id,acc_login,acc_password, is_admin = bool(is_admin))
+            return Account(id, acc_login, acc_password, is_admin = bool(is_admin))
 
-    def delete_account(self, id: int) -> bool: 
+    def delete_account(self, id: int) -> bool:
         with self._get_connection() as conn:
-            cursor = conn.execute(
-                "DELETE FROM users WHERE id = ?",
-                (id,)
-            )
+            cursor = conn.execute("DELETE FROM users WHERE id = ?", (id,))
             return cursor.rowcount > 0
 
     def get_accounts(self) -> list[Account]:
         with self._get_connection() as conn:
-            cursor = conn.execute("SELECT id, login, is_admin FROM users")
+            cursor = conn.execute("SELECT id, login FROM users")
             rows = cursor.fetchall()
             return [Account(id = row["id"], login = row["login"], password="", is_admin = bool(row["is_admin"])) for row in rows]
 

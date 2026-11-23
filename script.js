@@ -3,7 +3,7 @@ const API_BASE_URL = 'http://localhost:5000';
 let authToken = null;
 let isAdmin = false;
 
-function logDebug(title, data) 
+function logDebug(title, data)
 {
     const consoleBox = document.getElementById('debugConsole');
     const timestamp = new Date().toLocaleTimeString();
@@ -11,7 +11,8 @@ function logDebug(title, data)
     consoleBox.innerText = `[${timestamp}]\n${title}\n${formatted}\n\n` + consoleBox.innerText;
 }
 
-function logDebugUsers(title, data){
+function logDebugUsers(title, data)
+{
     const consoleBox = document.getElementById('debugConsoleUsers');
     const timestamp = new Date().toLocaleTimeString();
     const formatted = typeof data === 'object' ? JSON.stringify(data, null, 2) : data;
@@ -60,24 +61,27 @@ async function addReservation()
 {
     const roomNumber = document.getElementById('addRoomNumber').value;
     const guestName  = document.getElementById('addGuestName').value;
-    
+    const checkIn    = document.getElementById('addCheckIn').value;
+    const checkOut   = document.getElementById('addCheckOut').value;
+
     const url = `${API_BASE_URL}/api/reservation-create`;
 
-    if (!roomNumber || !guestName) 
+    if (!roomNumber || !guestName || !checkIn || !checkOut)
     {
-        alert('Please provide both room number and guest name');
+        alert('Please provide room number, guest name, check-in, and check-out');
         return;
     }
 
     try 
     {
-        const response = await fetch
-        (url, {
+        const response = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 room_number: parseInt(roomNumber, 10),
-                guest_name: guestName
+                guest_name: guestName,
+                check_in: checkIn,
+                check_out: checkOut
             })
         });
         
@@ -92,8 +96,37 @@ async function addReservation()
 
 async function deleteReservation() 
 {
+    const reservationId = document.getElementById('delReservationId').value;
+    const url = `${API_BASE_URL}/api/reservation-destroy`;
+
+    if (!reservationId)
+    {
+        alert('Please enter a reservation ID to delete');
+        return;
+    }
+
+    try
+    {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: parseInt(reservationId, 10)
+            })
+        });
+
+        const data = await response.json();
+        logDebug(`POST ${url} [${response.status}]`, data);
+    }
+    catch (error)
+    {
+        logDebug(`POST ${url} [FAILED]`, error.message);
+    }
+}
+
+async function deleteReservationByRoom()
+{
     const roomNumber = document.getElementById('delRoomNumber').value;
-    
     const url = `${API_BASE_URL}/api/reservation-destroy`;
 
     if (!roomNumber) 
@@ -104,8 +137,7 @@ async function deleteReservation()
 
     try 
     {
-        const response = await fetch
-        (url, {
+        const response = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -126,56 +158,61 @@ async function fetchAllAccounts()
 {
     const url = `${API_BASE_URL}/api/users`;
 
-    try{
+    try
+    {
         const response = await fetch(url);
         const data = await response.json();
-        logDebugUsers(`GET ${url} [${response.status}]`,data);
+        logDebugUsers(`GET ${url} [${response.status}]`, data);
     }
     catch (error)
     {
-        logDebugUsers(`GET ${url} [${response.status}]`, error.message);
+        logDebugUsers(`GET ${url} [FAILED]`, error.message);
     }
 }
 
-async function addAccount(){
+async function addAccount()
+{
     const _id = document.getElementById('addId').value;
     const _login = document.getElementById('addLogin').value;
     const _password = document.getElementById('addPassword').value;
     const _isAdmin = document.getElementById('addIsAdmin').checked;
 
-    const url  = `${API_BASE_URL}/api/user-create`;
+    const url = `${API_BASE_URL}/api/user-create`;
 
-    if(!_id || !_login || !_password){
+    if (!_id || !_login || !_password)
+    {
         alert('Please provide id, login and password');
         return;
     }
 
-    try{
-        const response = await fetch(
-            url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    id: parseInt(_id,10),
-                    acc_login: _login,
-                    acc_password: _password,
+    try
+    {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: parseInt(_id, 10),
+                acc_login: _login,
+                acc_password: _password,
                     is_admin: _isAdmin
                 })
         });
         const data = await response.json();
         logDebugUsers(`POST ${url} [${response.status}]`, data);
     }
-    catch(error){
-        logDebugUsers(`POST ${url} [FAILED]`,error.message);
+    catch (error)
+    {
+        logDebugUsers(`POST ${url} [FAILED]`, error.message);
     }
 }
 
-async function deleteAccount(){
+async function deleteAccount()
+{
     const _id = document.getElementById('delId').value;
-
     const url = `${API_BASE_URL}/api/user-destroy`;
 
-    if(!_id){
+    if (!_id)
+    {
         alert('Please provide id');
         return;
     }
@@ -185,44 +222,47 @@ async function deleteAccount(){
         headers['Authorization'] = `Bearer ${authToken}`;
     }
 
-    try{
-        const response = await fetch(
-            url, {
-                method: 'POST',
-                headers: headers,
-                body: JSON.stringify({
-                    id: parseInt(_id, 10)
-                })
+    try
+    {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({
+                id: parseInt(_id, 10)
+            })
         });
 
         const data = await response.json();
         logDebugUsers(`POST ${url} [${response.status}]`, data);
     }
-    catch(error){
-        logDebugUsers(`POST ${url} [FAILED]`,error.message);
+    catch (error)
+    {
+        logDebugUsers(`POST ${url} [FAILED]`, error.message);
     }
 }
 
-async function loginAccount(){
+async function loginAccount()
+{
     const _login = document.getElementById('loginName').value;
     const _password = document.getElementById('loginPassword').value;
 
     const url = `${API_BASE_URL}/api/user-login`;
 
-    if(!_login || !_password){
+    if (!_login || !_password)
+    {
         alert('Please provide login and password');
         return;
     }
 
-    try{
-        const response = await fetch(
-            url, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    acc_login: _login,
-                    acc_password: _password
-                })
+    try
+    {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                acc_login: _login,
+                acc_password: _password
+            })
         });
         const data = await response.json();
         logDebugUsers(`POST ${url} [${response.status}]`, data);
@@ -234,14 +274,15 @@ async function loginAccount(){
             document.getElementById('currentAdmin').innerText = isAdmin ? "Yes" : "No";
             document.getElementById('currentToken').innerText = `${authToken.slice(0, 12)}...`;
         }
-
     }
-    catch(error){
+    catch (error)
+    {
         logDebugUsers(`POST ${url} [FAILED]`, error.message);
     }
 }
 
-async function logoutAccount(){
+async function logoutAccount()
+{
     const url = `${API_BASE_URL}/api/user-logout`;
 
     const headers = {'Content-Type': 'application/json'};
@@ -249,16 +290,17 @@ async function logoutAccount(){
         headers['Authorization'] = `Bearer ${authToken}`;
     }
 
-    try{
-        const response = await fetch(
-            url, {
+    try
+    {
+        const response = await fetch(url, {
             method: 'POST',
             headers: headers
         });
         const data = await response.json();
         logDebugUsers(`POST ${url} [${response.status}]`, data);
 
-        if (data.status === "success") {
+        if (data.status === "success")
+        {
             document.getElementById('currentUser').innerText = "None";
             document.getElementById('currentAdmin').innerText = "No";
             document.getElementById('currentToken').innerText = "None";
@@ -267,9 +309,9 @@ async function logoutAccount(){
             authToken = null;
             isAdmin = false;
         }
-
     }
-    catch(error){
+    catch (error)
+    {
         logDebugUsers(`POST ${url} [FAILED]`, error.message);
     }
 }
